@@ -1,0 +1,32 @@
+package:
+  name: plotting_routine
+  version: 0.1.alpha
+
+source:
+  git_rev: v0.1-alpha
+  git_url: https://github.com/csaq5147/plotting_routine.git
+
+requirements:
+  build:
+    - python
+    - numpy
+    - sympy
+    - matplotlib
+
+  run:
+    - python
+    - numpy
+    - astropy >=1.2.1
+    - scipy
+    - wxpython
+
+
+test:
+  imports:
+    - plotting_routine
+
+about:
+  home: https://github.com/csaq5147/plotting_routine
+  license: GPL3
+  license_file: LICENSE
+  description: 'Quick function plotter'
