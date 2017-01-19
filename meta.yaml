@@ -26,7 +26,7 @@ test:
     - plotting_routine
 
 about:
-  home: https://github.com/csaq5147/plotting_routine
+  home: https://github.com/csaq5147plotting_routine
   license: GPL3
   license_file: LICENSE
   description: 'Quick function plotter'
