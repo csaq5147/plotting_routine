@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 from distutils.core import setup
 
 setup(name='plotting_routine',
@@ -8,5 +6,5 @@ setup(name='plotting_routine',
       author='Lukas Knosp',
       author_email='Lukas.Knosp@student.uibk.ac.at',
       url='https://github.com/csaq5147/plotting_routine.git',
-      scripts=['miracle']
+      scripts=['miracle.py']
      )
