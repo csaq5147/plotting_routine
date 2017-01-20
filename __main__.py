@@ -15,8 +15,7 @@ class CanvasFrame(wx.Frame):
 
         # Figure Frame - here will be the plotted function
         self.figure = Figure()
-        self.axes = self.figure.add_subplot(111)
-        self.axes.plot()
+        self.ax = self.figure.add_subplot(111)
         self.canvas = FigureCanvas(self, -1, self.figure)
 
         # Header of the Menu
@@ -25,55 +24,59 @@ class CanvasFrame(wx.Frame):
         titleSizer.Add(title, 0, wx.TOP | wx.BOTTOM, 20)
 
         # Creating the rows of button
-        self.btn = [] 
         self.btn_row1 = wx.BoxSizer(wx.HORIZONTAL) 
         self.btn_row2 = wx.BoxSizer(wx.HORIZONTAL)
         self.btn_row3 = wx.BoxSizer(wx.HORIZONTAL)
 
-        # Button for Intervall input
-        self.btn.append(wx.Button(self, -1, "Intervall"))
-        self.btn_row1.Add(self.btn[0], 1, wx.EXPAND)
-        self.Bind(wx.EVT_BUTTON, self.GetxInt, self.btn[0])
-
-        # Button - change color 
-        self.btn.append(wx.Button(self, -1, "Red"))
-        self.btn_row2.Add(self.btn[1], 1, wx.EXPAND)
-        self.Bind(wx.EVT_BUTTON, self.ChangeColor, self.btn[1])
-
-        # Button -
-        self.btn.append(wx.Button(self, -1, "Thick"))
-        self.btn_row2.Add(self.btn[2], 1, wx.EXPAND)
-        self.Bind(wx.EVT_BUTTON, self.GetyInt, self.btn[2])
-
-        # Button - Clear Plot
-        self.btn.append(wx.Button(self, -1, "Clear"))
-        self.btn_row3.Add(self.btn[3], 1, wx.EXPAND)
-        self.Bind(wx.EVT_BUTTON, self.on_button_clear, self.btn[3])
-
         # Button to create a function
         self.btn_plt = wx.Button(self, -1, "Plot a function")
+        self.btn_row1.Add(self.btn_plt, -1, wx.EXPAND)
         self.Bind(wx.EVT_BUTTON, self.GetFunc, self.btn_plt)
+
+        # Button for Intervall input
+        self. btn_int = wx.Button(self, -1, "Intervall")
+        self.btn_row1.Add(self.btn_int, -1, wx.EXPAND)
+        self.Bind(wx.EVT_BUTTON, self.GetxInt, self.btn_int)
+
+        # Button
+        self.btn_xLabel = wx.Button(self, -1, "xLabel")
+        self.btn_row2.Add(self.btn_xLabel, 1, wx.EXPAND)
+        self.Bind(wx.EVT_BUTTON, self.GetxLabel, self.btn_xLabel)
+
+        # Button
+        self.btn_yLabel = wx.Button(self, -1, "yLabel")
+        self.btn_row2.Add(self.btn_yLabel, 1, wx.EXPAND)
+        self.Bind(wx.EVT_BUTTON, self.GetyLabel, self.btn_yLabel)
+
+        # Button - Clear Plot
+        self.btn_clear = wx.Button(self, -1, "Clear")
+        self.btn_row3.Add(self.btn_clear, 1, wx.EXPAND)
+        self.Bind(wx.EVT_BUTTON, self.on_button_clear, self.btn_clear)
 
         # Output field
         self.output= wx.TextCtrl(self, style=wx.TE_READONLY)
         self.output.SetValue(' ')
 
-        # Empty Row
-        empty_r = wx.BoxSizer(wx.HORIZONTAL)
-        empty_r.Add(wx.StaticText(self, wx.ID_ANY, ' '), 0, wx.CENTER, 5)
+        # Radio Box
+        self.radioList = ['blue', 'green', 'red', 'cyan', 'magenta',
+                     'yellow', 'black']
+        rb = wx.RadioBox(self, label="Colors", choices=self.radioList, majorDimension=2, style=wx.RA_SPECIFY_COLS)
+        self.Bind(wx.EVT_RADIOBOX, self.ChangeColor, rb)
 
         # Menu 
         self.menu = wx.BoxSizer(wx.VERTICAL) 
         self.menu.Add(titleSizer, 0, wx.ALIGN_CENTER)
         self.menu.Add(wx.StaticLine(self), 0, wx.EXPAND, 0)   
-        self.menu.Add(self.btn_plt, 0, wx.EXPAND | wx.ALL, 15)
+        self.menu.Add(self.btn_plt, 0, wx.EXPAND | wx.LEFT | wx.RIGHT | wx.TOP, 15)
+        self.menu.Add(self.btn_int, 0, wx.EXPAND | wx.LEFT | wx.RIGHT | wx.BOTTOM, 15)
         self.menu.Add(wx.StaticLine(self), 0, wx.EXPAND, 0)   
-        self.menu.Add(self.btn_row1, 0, wx.EXPAND | wx.LEFT | wx.RIGHT | wx.TOP, 15)
-        self.menu.Add(self.btn_row2, 0, wx.EXPAND | wx.LEFT | wx.RIGHT, 15)
-        self.menu.Add(self.btn_row3, 0, wx.EXPAND | wx.LEFT | wx.RIGHT | wx.BOTTOM, 15)
+        self.menu.Add(self.btn_row2, 0, wx.EXPAND | wx.ALL, 15)
+        self.menu.Add(wx.StaticLine(self), 0, wx.EXPAND, 0) 
+        self.menu.Add(rb, 0, wx.ALL, 15)
+        self.menu.Add(wx.StaticLine(self), 0, wx.EXPAND, 0)   
+        self.menu.Add(self.btn_row3, 0, wx.EXPAND | wx.ALL, 15)
         self.menu.Add(wx.StaticLine(self), 0, wx.EXPAND, 0)   
         self.menu.Add(self.output, 0, wx.EXPAND | wx.ALL, 15)
-        self.menu.Add(empty_r, 0, 0, 0)
 
         # Adding Toolbar to Plot
         self.fframe = wx.BoxSizer(wx.VERTICAL)
@@ -94,19 +97,19 @@ class CanvasFrame(wx.Frame):
         dlg.ShowModal()
 
         try:
-          myfunc = str(dlg.GetValue())
-          self.variable = parse_expr(myfunc, transformations=transformations)
+          self.myfunc = str(dlg.GetValue())
+          self.variable = parse_expr(self.myfunc, transformations=transformations)
           self.Fx = sym.lambdify(x, self.variable)
-          ax = self.figure.add_subplot(111)
 
-          self.output.SetValue('f(x) = '+ myfunc)
+          self.output.SetValue('f(x) = '+ self.myfunc)
 
-          ax.cla()
-          y = np.arange(0, 10, 0.01)
-          ax.plot(y, np.array([self.Fx(i) for i in y]), 'k-')
+          self.ax.cla()
+          self.y = np.arange(0, 10, 0.01)
+          self.ax.plot(self.y, np.array([self.Fx(i) for i in y]), 'b-')
           self.canvas.draw()
+
         except:
-          self.output.SetValue('<--- NEW ENTRY --->')
+          self.output.SetValue('<- try again ->')
 
         dlg.Destroy()
 
@@ -122,61 +125,64 @@ class CanvasFrame(wx.Frame):
           
           self.output.SetValue('x in ['+str(self.xint[0])+','+str(self.xint[1])+']')
 
-          ax = self.figure.add_subplot(111)
-          ax.cla()
+          self.ax.cla()
           y = np.arange(np.min(self.xint), np.max(self.xint), 0.01)
-          ax.plot(y, np.array([self.Fx(i) for i in y]), 'k-')
+          self.ax.plot(y, np.array([self.Fx(i) for i in y]), 'k-')
           self.canvas.draw()
         except:
-          self.output.SetValue('<--- Error --->')
+          self.output.SetValue('<- Error ->')
 
         dlg.Destroy()
 
 
-    def GetyInt(self, event): # doesn't work
-        dlg = wx.TextEntryDialog(None, 'y Intervall y1, y2',"Intervall","y1, y2", style=wx.OK)
+    def GetxLabel(self, event):
+        dlg = wx.TextEntryDialog(None, 'label of the x-axis',"Labels","xlabel", style=wx.OK)
         dlg.ShowModal()
 
-        try:
-          values = str(dlg.GetValue())
-          self.yint = np.array(values.split(','), dtype='|S4')
-          self.yint = self.yint.astype(np.float)
-          
-          self.output.SetValue('y in ['+str(self.yint[0])+','+str(self.myint[1])+']')
-
-          ax = self.figure.add_subplot(111)
-          ax.cla()
-          # ax.axes.set_ylim(np.min(self.yint), np.max(self.yint))
-          y = np.arange(np.min(self.xint), np.max(self.xint), 0.01)
-          ax.plot(y, np.array([self.Fx(i) for i in y]), 'k-')
-          self.canvas.draw()
-        except:
-          self.output.SetValue('<--- Error --->')
+        self.ax.set_xlabel( str(dlg.GetValue()) )
+        self.canvas.draw()
 
         dlg.Destroy()
 
+    def GetyLabel(self, event):
+        dlg = wx.TextEntryDialog(None, 'label of the y-axis',"Labels","ylabel", style=wx.OK)
+        dlg.ShowModal()
 
+        self.ax.set_ylabel( str(dlg.GetValue()) )
+        self.canvas.draw()
+
+        dlg.Destroy()
 
     def ChangeColor(self, event):
-        try:
-            ax = self.figure.add_subplot(111)
-            ax.cla()
-            try:
-                y = np.arange(np.min(self.myint), np.max(self.myint), 0.01)
-            except:
-                y = np.arange(0, 10, 0.01)
+        # try:
+        #     self.ax.cla()
+        #     try:
+        #         y = np.arange(np.min(self.xint), np.max(self.xint), 0.01)
+        #     except:
+        #         y = np.arange(0, 10, 0.01)
 
-            ax.plot(y, np.array([self.Fx(i) for i in y]), 'r')
-            self.canvas.draw()
+        #     self.ax.plot(y, np.array([self.Fx(i) for i in y]), color=self.radioList[event.GetInt()] )
 
-        except:
-          self.output.SetValue('<--- Try Again --->')
+        #     self.canvas.draw()
+        #     self.output.SetValue('<- Changed color ->')
+
+        # except:
+        #   self.output.SetValue('<- no function ->')
+
+        # y = np.arange(np.min(self.xint), np.max(self.xint), 0.01)
+        lines = self.ax.plot(self.y, np.array([self.Fx(i) for i in self.y]) )
+        line = lines[0]
+        line.set_color(self.radioList[event.GetInt()])
+
+        self.canvas.draw()
+
+        # self.ax.set_color(self.radioList[event.GetInt()])
 
     def on_button_clear(self, event):
-        ax = self.figure.add_subplot(111)
-        ax.cla()
+        self.ax.cla()
         self.canvas.draw()
         self.Fx=0
+        self.output.SetValue('clear')
 
     def add_toolbar(self):
         self.toolbar = NavigationToolbar(self.canvas)
