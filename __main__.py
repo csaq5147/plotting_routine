@@ -1,3 +1,8 @@
+"""
+Author: Lukas Knosp (csaq5147)
+Date: 20.1.17
+
+"""
 import wx
 import numpy as np
 from matplotlib import collections, colors, transforms
